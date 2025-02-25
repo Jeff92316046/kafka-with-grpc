@@ -1,0 +1,21 @@
+[project]
+name = "kafka-with-grpc"
+version = "0.1.0"
+description = ""
+authors = [
+    {name = "ErEr",email = "jeffliao92316046@gmail.com"}
+]
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "grpcio-tools (>=1.69.0,<2.0.0)",
+    "kafka-python (>=2.0.4,<3.0.0)",
+    "python-dotenv (>=1.0.1,<2.0.0)",
+]
+
+[tool.poetry]
+package-mode = false
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
