@@ -13,9 +13,3 @@ os.system(
     f"    --pyi_out={output_dir} "
     f"    {proto_target}"
 )
-
-# fix the import problem in the generated files (using protoletariat)
-# os.system(
-#     "protol --create-package --in-place \\\n"
-#     f"    --python-out {output_dir} protoc --proto-path={proto_path} {proto_target}"
-# )
