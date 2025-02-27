@@ -5,10 +5,10 @@ package message;
 message Message {
   int64 room_id = 1;
   int64 message_id = 2;
-  int64 author = 4;
-  string text = 5;
+  int64 author = 3;
+  string text = 4;
 }
 
 service MessageService {
-  rpc chatStream (stream Message) returns (stream Message);
+  rpc ChatStream (stream Message) returns (stream Message);
 }
