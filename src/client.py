@@ -1,33 +1,41 @@
 import asyncio
 import threading
 import grpc
-from generated.message_pb2 import Message
+from generated.message_pb2 import Message,ChatRequest
 from generated.message_pb2_grpc import MessageServiceStub
 from google.protobuf.timestamp_pb2 import Timestamp
-
-def receive_messages(stub:MessageServiceStub,user_id:int):
-    """ 持續接收 server 訊息 """
-    request_messages = []
-    for response in stub.ChatStream(iter(request_messages)):
-        if response.author != user_id:
-            print(f"\n[{response.author}]: {response.text}\n> ", end="")
-
-async def chat_client(user_id: int, room_id: int):
-    # Correct the port here:
-    channel = grpc.insecure_channel("localhost:3000")
-    stub = MessageServiceStub(channel)
-    threading.Thread(target=receive_messages, args=(stub,user_id), daemon=True).start()
-
+async def send_message(stub:MessageServiceStub, room_id, author):
+    message_id = 0
     while True:
-        message = input("> ")
-        if message.lower() == "exit":
+        text = await asyncio.to_thread(input, ">")
+        if text.lower() == "/exit":
             break
-        try:
-            stub.ChatStream(iter([Message(room_id=room_id,author=user_id, text=message)]))
-        except Exception as e:
-            print(e)
+        message_id += 1
+        request = Message(
+            room_id=room_id,
+            message_id=message_id,
+            author=author,
+            text=text
+        )
+        await stub.SendMessage(request)
+
+async def chat_stream(stub:MessageServiceStub, room_id,author):
+    request = ChatRequest(room_id=room_id,author=author)
+    async for message in stub.ChatStream(request):
+        if message.author != author:
+            print(f"\r{message.author}: {message.text}",end='\n')
+
+async def main():
+    async with grpc.aio.insecure_channel("localhost:3000") as channel:
+        stub = MessageServiceStub(channel)
+
+        room_id = int(input("Enter room ID: "))
+        author = int(input("Enter your user ID: "))
+
+        recv_task = asyncio.create_task(chat_stream(stub, room_id,author))
+        send_task = asyncio.create_task(send_message(stub, room_id, author))
+
+        await asyncio.gather(recv_task, send_task)
 
 if __name__ == "__main__":
-    user_id = int(input("輸入你的 User ID: "))
-    room_id = int(input("輸入房間 ID: "))
-    asyncio.run(chat_client(user_id, room_id))
+    asyncio.run(main())
