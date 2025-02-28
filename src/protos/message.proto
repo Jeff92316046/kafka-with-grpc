@@ -9,6 +9,17 @@ message Message {
   string text = 4;
 }
 
+message ChatRequest {
+  int64 room_id = 1;
+  int64 author = 2;
+}
+
+message Empty {}
+
 service MessageService {
-  rpc ChatStream (stream Message) returns (stream Message);
+  // Server streaming: Client sends room_id & author, server streams messages
+  rpc ChatStream (ChatRequest) returns (stream Message);
+
+  // Unary RPC: Client sends a message, server confirms receipt
+  rpc SendMessage (Message) returns (Empty);
 }
